@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Check, Terminal, ArrowRight, CornerRightDown } from "lucide-react";
+import { Copy, Check, Terminal, ArrowRight, CornerRightDown, User, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -19,7 +19,6 @@ interface Message {
 }
 
 export default function ChatView({ id, onClose }: { id: string; onClose: () => void }) {
-
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -29,9 +28,10 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
     fetch(`/api/conversations/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        setMessages(data.messages);
+        setMessages(data.messages || []);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [id]);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-white border-l border-black">
         <div className="w-12 h-12 border-4 border-black border-t-transparent animate-spin mb-4" />
-        <p className="text-[10px] font-mono uppercase tracking-[0.3em] animate-pulse">Syncing Session...</p>
+        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-black animate-pulse">Syncing Session...</p>
       </div>
     );
   }
@@ -55,22 +55,20 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
         <div className="flex items-center gap-4 lg:gap-6">
           <button 
             onClick={onClose}
-            className="lg:hidden p-2 border-2 border-black hover:bg-black hover:text-white transition-colors"
+            className="lg:hidden p-2 border-2 border-black text-black hover:bg-black hover:text-white transition-colors"
           >
-
             <ArrowRight className="w-4 h-4 rotate-180" />
           </button>
-          <div className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-black flex items-center justify-center font-mono text-[10px] lg:text-xs font-bold shrink-0">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-black text-black flex items-center justify-center font-mono text-[10px] lg:text-xs font-bold shrink-0">
             ID
           </div>
-
           <div className="flex flex-col overflow-hidden">
-            <h2 className="text-lg lg:text-2xl font-display uppercase tracking-tighter leading-none truncate">{id.slice(0, 8)}</h2>
-            <p className="text-[8px] lg:text-[9px] font-mono tracking-widest uppercase opacity-40 mt-1 truncate">{id}</p>
+            <h2 className="text-lg lg:text-2xl font-display uppercase tracking-tighter leading-none truncate text-black">{id.slice(0, 8)}</h2>
+            <p className="text-[8px] lg:text-[9px] font-mono tracking-widest uppercase text-black/40 mt-1 truncate">{id}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <span className="hidden sm:inline-block text-[10px] font-mono uppercase tracking-widest border border-black px-3 py-1">
+          <span className="hidden sm:inline-block text-[10px] font-mono uppercase tracking-widest border border-black px-3 py-1 text-black">
             Historical Log
           </span>
         </div>
@@ -78,10 +76,9 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
 
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 lg:p-12 space-y-24 scroll-smooth"
+        className="flex-1 overflow-y-auto p-6 lg:p-12 space-y-24 scroll-smooth bg-white"
       >
         <div className="max-w-4xl mx-auto space-y-32 pb-32">
-
           <AnimatePresence mode="popLayout">
             {messages.map((msg, i) => (
               <MessageRow key={i} msg={msg} isFirst={i === 0} />
@@ -109,15 +106,17 @@ function MessageRow({ msg, isFirst }: { msg: Message; isFirst: boolean }) {
         className="flex flex-col items-start group"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-2 h-2 bg-black" />
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">
+          <div className="w-6 h-6 border border-black flex items-center justify-center">
+            <User className="w-3 h-3 text-black" />
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold text-black/60">
             PROMPT — {new Date(msg.created_at).toLocaleTimeString([], { hour12: false })}
           </span>
         </div>
         
         <div className="relative w-full">
           <div className={cn(
-            "text-2xl font-body leading-relaxed text-black/90",
+            "text-2xl font-body leading-relaxed text-black",
             isFirst && "first-letter:float-left first-letter:text-6xl first-letter:font-display first-letter:mr-4 first-letter:mt-2 first-letter:border-4 first-letter:border-black first-letter:px-4 first-letter:py-1 first-letter:leading-none"
           )}>
              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
@@ -139,26 +138,29 @@ function MessageRow({ msg, isFirst }: { msg: Message; isFirst: boolean }) {
         className="flex flex-col items-start w-full"
       >
         <div className="flex items-center gap-3 mb-8">
-          <CornerRightDown className="w-4 h-4" />
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">
+          <div className="w-6 h-6 bg-black flex items-center justify-center">
+            <Bot className="w-3 h-3 text-white" />
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold text-black">
             RESPONSE — {new Date(msg.created_at).toLocaleTimeString([], { hour12: false })}
           </span>
         </div>
 
-        <div className="bg-black text-white p-12 w-full border-l-[12px] border-black relative">
-          <div className="prose prose-invert max-w-none prose-lg font-body">
+        <div className="bg-black text-white p-8 lg:p-12 w-full border-l-[12px] border-black relative">
+          <div className="prose prose-invert max-w-none prose-lg font-body text-white">
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({children}) => <h1 className="text-4xl font-display mb-8 tracking-tighter text-white">{children}</h1>,
-                h2: ({children}) => <h2 className="text-2xl font-display mb-6 tracking-tight text-white border-b border-white/20 pb-2">{children}</h2>,
-                p: ({children}) => <p className="mb-6 leading-relaxed opacity-90">{children}</p>,
+                h1: ({children}) => <h1 className="text-4xl font-display mb-8 tracking-tighter text-white uppercase">{children}</h1>,
+                h2: ({children}) => <h2 className="text-2xl font-display mb-6 tracking-tight text-white border-b border-white/20 pb-2 uppercase">{children}</h2>,
+                p: ({children}) => <p className="mb-6 leading-relaxed text-white/90">{children}</p>,
+                li: ({children}) => <li className="mb-2 text-white/90">{children}</li>,
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || "");
                   return !inline ? (
                     <CodeBlock language={match ? match[1] : ""}>{String(children).replace(/\n$/, "")}</CodeBlock>
                   ) : (
-                    <code className="bg-white/10 px-1.5 py-0.5 font-mono text-sm text-white" {...props}>
+                    <code className="bg-white/20 px-1.5 py-0.5 font-mono text-sm text-white" {...props}>
                       {children}
                     </code>
                   );
@@ -217,12 +219,12 @@ function CodeBlock({ children, language }: { children: string; language: string 
     <div className="my-12 border-2 border-white bg-white/5 overflow-hidden">
       <div className="flex items-center justify-between px-6 py-3 border-b border-white/20 bg-white/5">
         <div className="flex items-center gap-3">
-          <Terminal className="w-3 h-3 opacity-40" />
-          <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest">{language || "txt"}</span>
+          <Terminal className="w-3 h-3 text-white/40" />
+          <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{language || "txt"}</span>
         </div>
         <button 
           onClick={copy}
-          className="text-[10px] font-mono hover:underline uppercase tracking-widest"
+          className="text-[10px] font-mono text-white/60 hover:text-white hover:underline uppercase tracking-widest"
         >
           {copied ? "SUCCESS" : "COPY"}
         </button>
