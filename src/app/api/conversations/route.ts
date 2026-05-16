@@ -1,31 +1,41 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { config } from '@/lib/config';
+
+
+export const dynamic = 'force-dynamic';
 
 const BRAIN_DIR = config.brainDir;
 
 
 
+
 export async function GET() {
   try {
-    console.log('Fetching conversations from:', BRAIN_DIR);
-    const directories = await fs.readdir(BRAIN_DIR, { withFileTypes: true });
+    const headersList = await headers();
+    const customDir = headersList.get('x-brain-dir');
+    const targetDir = customDir || BRAIN_DIR;
+
+    console.log('Fetching conversations from:', targetDir);
+    const directories = await fs.readdir(targetDir, { withFileTypes: true });
+    
+    console.log(`Found ${directories.length} total directories in brain.`);
     
     const conversations = await Promise.all(
       directories
         .filter((dirent) => dirent.isDirectory())
         .map(async (dirent) => {
           const id = dirent.name;
-          const logPath = path.join(BRAIN_DIR, id, '.system_generated', 'logs', 'overview.txt');
+          const logPath = path.join(targetDir, id, '.system_generated', 'logs', 'overview.txt');
 
-          
+
           try {
             const stats = await fs.stat(logPath);
             const content = await fs.readFile(logPath, 'utf-8');
             const lines = content.split('\n').filter(Boolean);
             
-            // Try to find the first USER_INPUT to use as a title
             let title = 'Untitled Conversation';
             for (const line of lines) {
               try {
@@ -43,20 +53,23 @@ export async function GET() {
             return {
               id,
               title,
-              updatedAt: stats.mtime,
+              updatedAt: stats.mtime.toISOString(),
               size: stats.size,
             };
           } catch (e) {
-            return null; // Skip if no overview.txt
+            // console.log(`Skipping ${id}: No overview.txt found`);
+            return null;
           }
         })
     );
 
     const filtered = conversations
-      .filter(Boolean)
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+      .filter((c): c is any => c !== null)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
+    console.log(`Successfully indexed ${filtered.length} sessions.`);
     return NextResponse.json(filtered);
+
   } catch (error) {
     console.error('Error fetching conversations:', error);
     return NextResponse.json({ error: 'Failed to fetch conversations' }, { status: 500 });

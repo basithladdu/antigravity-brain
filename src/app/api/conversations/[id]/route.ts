@@ -1,9 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { config } from '@/lib/config';
 
+
+export const dynamic = 'force-dynamic';
+
 const BRAIN_DIR = config.brainDir;
+
 
 
 
@@ -12,7 +17,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const logPath = path.join(BRAIN_DIR, id, '.system_generated', 'logs', 'overview.txt');
+  const headersList = await headers();
+  const customDir = headersList.get('x-brain-dir');
+  const targetDir = customDir || BRAIN_DIR;
+
+  const logPath = path.join(targetDir, id, '.system_generated', 'logs', 'overview.txt');
+
 
   try {
     const content = await fs.readFile(logPath, 'utf-8');

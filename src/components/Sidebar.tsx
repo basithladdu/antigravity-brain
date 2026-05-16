@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Search, Filter, ArrowUpDown, Calendar, ChevronDown, Hash, LayoutGrid } from "lucide-react";
+import { Search, Filter, ArrowUpDown, Calendar, ChevronDown, Hash, LayoutGrid, ArrowRight, Settings, X, FolderOpen } from "lucide-react";
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO } from "date-fns";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -33,6 +33,29 @@ export default function Sidebar({
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [customBrainDir, setCustomBrainDir] = useState("");
+
+  const fetchConversations = (dir?: string) => {
+    setLoading(true);
+    const headers: Record<string, string> = {};
+    if (dir) headers['x-brain-dir'] = dir;
+
+    fetch("/api/conversations", { headers })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setConversations(data);
+        } else {
+          setConversations([]);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setConversations([]);
+        setLoading(false);
+      });
+  };
 
   useEffect(() => {
     const savedPins = localStorage.getItem("ag-pins");
@@ -44,15 +67,9 @@ export default function Sidebar({
       }
     }
 
-    fetch("/api/conversations")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setConversations(data);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    const savedDir = localStorage.getItem("ag-brain-dir") || "";
+    setCustomBrainDir(savedDir);
+    fetchConversations(savedDir);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -69,6 +86,12 @@ export default function Sidebar({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const saveSettings = () => {
+    localStorage.setItem("ag-brain-dir", customBrainDir);
+    setShowSettings(false);
+    fetchConversations(customBrainDir);
+  };
 
   const togglePin = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -115,18 +138,26 @@ export default function Sidebar({
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 z-50 w-80 lg:w-96 border-r border-black bg-white flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static h-screen",
+      "fixed inset-y-0 left-0 z-50 w-80 lg:w-96 border-r-4 border-black bg-white flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static h-full overflow-hidden",
       selectedId ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
     )}>
-      <div className="p-8 border-b-4 border-black bg-white">
+      <div className="p-8 border-b-4 border-black bg-white shrink-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2 text-black">
             <div className="w-3 h-3 bg-black" />
             <h1 className="text-2xl font-display uppercase tracking-tighter">Archive</h1>
           </div>
-          <span className="text-[10px] font-mono uppercase tracking-widest bg-black text-white px-2 py-0.5">
-            {filteredAndSorted.length} Sessions
-          </span>
+          <div className="flex items-center gap-3">
+             <button 
+              onClick={() => setShowSettings(true)}
+              className="p-1 hover:bg-black hover:text-white transition-colors border border-transparent hover:border-black"
+             >
+               <Settings className="w-4 h-4" />
+             </button>
+             <span className="text-[10px] font-mono uppercase tracking-widest bg-black text-white px-2 py-0.5">
+               {filteredAndSorted.length} Sessions
+             </span>
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -174,7 +205,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto divide-y divide-black/10 bg-white">
+      <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-black/10 bg-white custom-scrollbar">
         {loading ? (
           <div className="divide-y divide-black/5">
             {[1, 2, 3, 4, 5, 6].map(i => (
@@ -242,6 +273,75 @@ export default function Sidebar({
           </div>
         )}
       </div>
+
+      <div className="p-8 border-t border-black bg-white mt-auto space-y-6">
+        <div className="flex flex-col gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] opacity-30">PROJECT</span>
+          <p className="text-[11px] font-body leading-relaxed opacity-70">
+            This project is open-source. Build your own log explorer, fork it, and make the future of technical archiving beautiful.
+          </p>
+          <a href="https://github.com/basithladdu/antigravity-brain" target="_blank" className="text-[10px] font-mono uppercase font-bold tracking-widest hover:underline flex items-center gap-2">
+            View Source <ArrowRight className="w-3 h-3" />
+          </a>
+        </div>
+
+        <div className="h-px bg-black/10" />
+
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] opacity-30">FOUNDER</span>
+            <a href="https://basith.wedevit.in" target="_blank" className="text-xs font-display uppercase tracking-tight hover:underline">
+              Shaik Abdul Basith (Devit)
+            </a>
+          </div>
+          
+          <div className="flex flex-wrap gap-x-4 gap-y-2 opacity-40">
+            <a href="https://instagram.com/basithladdu" target="_blank" className="text-[9px] font-mono uppercase tracking-widest hover:text-black hover:opacity-100">Insta</a>
+            <a href="https://twitter.com/basithladdu" target="_blank" className="text-[9px] font-mono uppercase tracking-widest hover:text-black hover:opacity-100">Twitter</a>
+            <a href="https://youtube.com/@basithladdu" target="_blank" className="text-[9px] font-mono uppercase tracking-widest hover:text-black hover:opacity-100">YT</a>
+            <a href="https://letterboxd.com/basithladdu" target="_blank" className="text-[9px] font-mono uppercase tracking-widest hover:text-black hover:opacity-100">LB</a>
+            <a href="https://open.spotify.com/user/basithladdu" target="_blank" className="text-[9px] font-mono uppercase tracking-widest hover:text-black hover:opacity-100">Spotify</a>
+          </div>
+        </div>
+      </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="absolute inset-0 z-[100] bg-white p-8 flex flex-col">
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-2xl font-display uppercase tracking-tighter">Settings</h2>
+            <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-black hover:text-white transition-colors border-2 border-black">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex-1 space-y-8">
+            <div className="space-y-4">
+              <label className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">Brain Directory</label>
+              <div className="relative">
+                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40" />
+                <input 
+                  type="text" 
+                  value={customBrainDir}
+                  onChange={(e) => setCustomBrainDir(e.target.value)}
+                  placeholder="C:\Users\...\brain"
+                  className="w-full bg-white border-2 border-black py-4 pl-12 pr-4 text-xs font-mono tracking-tight text-black focus:outline-none focus:bg-neutral-50"
+                />
+              </div>
+              <p className="text-[10px] font-body opacity-50 leading-relaxed italic">
+                * Paste the absolute path to your conversation logs. This is stored locally in your browser and used for API requests.
+              </p>
+            </div>
+          </div>
+
+          <button 
+            onClick={saveSettings}
+            className="w-full bg-black text-white py-4 font-mono uppercase tracking-widest font-bold hover:bg-neutral-800 transition-colors mt-auto"
+          >
+            Apply & Reload
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

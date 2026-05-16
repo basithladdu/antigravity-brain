@@ -25,7 +25,11 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/conversations/${id}`)
+    const headers: Record<string, string> = {};
+    const savedDir = localStorage.getItem("ag-brain-dir");
+    if (savedDir) headers['x-brain-dir'] = savedDir;
+
+    fetch(`/api/conversations/${id}`, { headers })
       .then((res) => res.json())
       .then((data) => {
         setMessages(data.messages || []);
@@ -33,6 +37,7 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
       })
       .catch(() => setLoading(false));
   }, [id]);
+
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -51,7 +56,12 @@ export default function ChatView({ id, onClose }: { id: string; onClose: () => v
 
   return (
     <div className="flex-1 flex flex-col bg-white relative overflow-hidden selection:bg-black selection:text-white">
-      <header className="h-24 border-b-4 border-black px-6 lg:px-12 flex items-center justify-between z-10 bg-white">
+      {/* Background Editorial Grid */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+           style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+      
+      <header className="h-24 border-b-4 border-black px-6 lg:px-12 flex items-center justify-between z-10 bg-white/80 backdrop-blur-md">
+
         <div className="flex items-center gap-4 lg:gap-6">
           <button 
             onClick={onClose}
