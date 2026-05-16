@@ -1,8 +1,7 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { NextResponse } from 'next/server';
+import { config } from '@/lib/config';
 
-const BRAIN_DIR = 'C:\\Users\\basit\\.gemini\\antigravity\\brain';
+const BRAIN_DIR = config.brainDir;
+
 
 export async function GET(
   request: Request,

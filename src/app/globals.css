@@ -4,49 +4,84 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 :root {
-  --background: #08080a;
-  --foreground: #ffffff;
+  --background: #FFFFFF;
+  --foreground: #000000;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), Georgia, serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
+/* Base Texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Horizontal Line Texture */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, #000 1px, #000 2px);
+  background-size: 100% 4px;
+  opacity: 0.01;
+  pointer-events: none;
+  z-index: 49;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+/* Sharp Corners Reset */
+* {
+  border-radius: 0 !important;
+}
+
+/* Custom Scrollbar (Monochrome) */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #FFFFFF;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  background: #000000;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
+/* Typography Resets */
 .prose pre {
   background: transparent !important;
   margin: 0 !important;
   padding: 0 !important;
+  border: 1px solid #000000;
 }
 
 .prose code {
   color: inherit !important;
   font-weight: inherit !important;
+  font-family: var(--font-mono);
 }
 
 .prose code::before,
@@ -54,3 +89,13 @@ body {
   content: "" !important;
 }
 
+/* Editorial Pull Quote */
+.pull-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  border-left: 8px solid #000000;
+  padding-left: 2rem;
+  margin: 4rem 0;
+}

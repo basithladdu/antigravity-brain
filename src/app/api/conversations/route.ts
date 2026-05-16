@@ -1,18 +1,20 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { NextResponse } from 'next/server';
+import { config } from '@/lib/config';
 
-const BRAIN_DIR = 'C:\\Users\\basit\\.gemini\\antigravity\\brain';
+const BRAIN_DIR = config.brainDir;
+
 
 export async function GET() {
   try {
+    console.log('Fetching conversations from:', BRAIN_DIR);
     const directories = await fs.readdir(BRAIN_DIR, { withFileTypes: true });
+    
     const conversations = await Promise.all(
       directories
         .filter((dirent) => dirent.isDirectory())
         .map(async (dirent) => {
           const id = dirent.name;
           const logPath = path.join(BRAIN_DIR, id, '.system_generated', 'logs', 'overview.txt');
+
           
           try {
             const stats = await fs.stat(logPath);
