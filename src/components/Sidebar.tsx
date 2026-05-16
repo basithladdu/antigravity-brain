@@ -72,7 +72,10 @@ export default function Sidebar({
   }, [conversations, search, sortBy, dateFilter]);
 
   return (
-    <aside className="w-96 border-r border-black bg-white flex flex-col h-screen overflow-hidden z-20">
+    <aside className={cn(
+      "fixed inset-y-0 left-0 z-50 w-80 lg:w-96 border-r border-black bg-white flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static h-screen",
+      selectedId ? "-translate-x-full lg:translate-x-0" : "translate-x-0"
+    )}>
       <div className="p-8 border-b-4 border-black">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">

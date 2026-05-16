@@ -16,8 +16,9 @@ export default function Home() {
       />
       
       {selectedId ? (
-        <ChatView id={selectedId} />
+        <ChatView id={selectedId} onClose={() => setSelectedId(null)} />
       ) : (
+
         <div className="flex-1 flex flex-col items-center justify-center bg-white relative p-12 overflow-hidden border-l border-black">
           {/* Background Grid Texture */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 

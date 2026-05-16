@@ -18,7 +18,8 @@ interface Message {
   created_at: string;
 }
 
-export default function ChatView({ id }: { id: string }) {
+export default function ChatView({ id, onClose }: { id: string; onClose: () => void }) {
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -50,18 +51,26 @@ export default function ChatView({ id }: { id: string }) {
 
   return (
     <div className="flex-1 flex flex-col bg-white relative overflow-hidden selection:bg-black selection:text-white">
-      <header className="h-24 border-b-4 border-black px-12 flex items-center justify-between z-10 bg-white">
-        <div className="flex items-center gap-6">
-          <div className="w-10 h-10 border-2 border-black flex items-center justify-center font-mono text-xs font-bold">
+      <header className="h-24 border-b-4 border-black px-6 lg:px-12 flex items-center justify-between z-10 bg-white">
+        <div className="flex items-center gap-4 lg:gap-6">
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 border-2 border-black hover:bg-black hover:text-white transition-colors"
+          >
+
+            <ArrowRight className="w-4 h-4 rotate-180" />
+          </button>
+          <div className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-black flex items-center justify-center font-mono text-[10px] lg:text-xs font-bold shrink-0">
             ID
           </div>
-          <div className="flex flex-col">
-            <h2 className="text-2xl font-display uppercase tracking-tighter leading-none">{id.slice(0, 8)}</h2>
-            <p className="text-[9px] font-mono tracking-widest uppercase opacity-40 mt-1">{id}</p>
+
+          <div className="flex flex-col overflow-hidden">
+            <h2 className="text-lg lg:text-2xl font-display uppercase tracking-tighter leading-none truncate">{id.slice(0, 8)}</h2>
+            <p className="text-[8px] lg:text-[9px] font-mono tracking-widest uppercase opacity-40 mt-1 truncate">{id}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-[10px] font-mono uppercase tracking-widest border border-black px-3 py-1">
+          <span className="hidden sm:inline-block text-[10px] font-mono uppercase tracking-widest border border-black px-3 py-1">
             Historical Log
           </span>
         </div>
@@ -69,9 +78,10 @@ export default function ChatView({ id }: { id: string }) {
 
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-12 space-y-24 scroll-smooth"
+        className="flex-1 overflow-y-auto p-6 lg:p-12 space-y-24 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto space-y-32 pb-32">
+
           <AnimatePresence mode="popLayout">
             {messages.map((msg, i) => (
               <MessageRow key={i} msg={msg} isFirst={i === 0} />
