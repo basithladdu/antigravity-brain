@@ -5,27 +5,33 @@ The missing UI for your Antigravity conversation logs. Stop digging through raw 
 ### What is this?
 Basically a sleek, local-first explorer for everything you've ever built with Antigravity. It pulls directly from your local `/brain` and renders everything in a clean, searchable dashboard.
 
-### Features
-- **Editorial UI**: Minimalist Monochrome design with Playfair Display typography.
-- **Advanced Filtering**: Sort by session size, date, or title. Filter by time (Today, Week, Month).
-- **Fast Search**: Find that one snippet you forgot weeks ago.
-- **Copy Everything**: One-click copy for code blocks and full messages.
-- **Local First**: Reads directly from your filesystem. No cloud, no lag.
+### 🛠️ Configuration (Required)
+Before running, you need to tell the app where your logs are stored:
 
-### How to Use
-1. **Explore**: Use the sidebar to search through all historical sessions indexed from your local brain.
-2. **Filter**: Narrow down results by date or sort by session size to find specific technical discussions.
-3. **Retrieve**: Instantly copy prompts or AI responses to your clipboard with editorial-style controls.
+1.  **Create a `.env.local` file** in the root directory.
+2.  **Add your `BRAIN_DIR` path**:
+    ```env
+    BRAIN_DIR=C:\Users\YourName\.gemini\antigravity\brain
+    ```
+    *(Note: Replace `YourName` with your actual Windows username)*
 
-### Setup
+### 🚀 Setup
 1. Clone it.
 2. `npm install`
 3. `npm run dev`
 4. Open [localhost:3000](http://localhost:3000)
 
-### Config
-By default, it looks here: `C:\Users\basit\.gemini\antigravity\brain`.
-If you moved your brain or are on a non-Windows machine, change the `BRAIN_DIR` path in `src/lib/config.ts`.
+### Features
+- **Editorial UI**: Minimalist Monochrome design with Playfair Display typography.
+- **Advanced Filtering**: Sort by session size, date, or title. Filter by time (Today, Week, Month).
+- **Session Pinning**: Hit the `#` icon to keep important sessions at the top.
+- **Fast Search**: `Cmd/Ctrl + K` or `/` to search through session titles.
+- **Copy Everything**: One-click copy for code blocks and full messages.
+
+### How to Use
+1. **Explore**: Use the sidebar to search through all historical sessions indexed from your local brain.
+2. **Filter**: Narrow down results by date or sort by session size.
+3. **Retrieve**: Instantly copy prompts or AI responses to your clipboard.
 
 ---
 built for the builders.
